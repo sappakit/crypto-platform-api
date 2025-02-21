@@ -6,3 +6,136 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  user_id    Int      @id @default(autoincrement())
+  username   String   @unique @db.VarChar(50)
+  password   String
+  email      String   @unique @db.VarChar(100)
+  name       String
+  created_at DateTime @default(now())
+
+  wallets User_Wallet[]
+}
+
+model User_Wallet {
+  wallet_id   Int      @id @default(autoincrement())
+  user_id     Int
+  currency_id Int
+  balance     Decimal  @default(0.0) @db.Decimal(18, 8)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user     User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  currency Currency @relation(fields: [currency_id], references: [currency_id], onDelete: Cascade)
+
+  sell_fiat_wallets   Sell_List[] @relation("seller_fiat_wallet")
+  sell_crypto_wallets Sell_List[] @relation("seller_crypto_wallet")
+
+  buy_fiat_wallets   Buy_Order[] @relation("buyer_fiat_wallet")
+  buy_crypto_wallets Buy_Order[] @relation("buyer_crypto_wallet")
+
+  sent_crypto_transactions     Crypto_Transaction[] @relation("sender_crypto_wallet")
+  received_crypto_transactions Crypto_Transaction[] @relation("receiver_crypto_wallet")
+
+  fiat_transactions Fiat_Transaction[]
+}
+
+model Currency {
+  currency_id   Int          @id @default(autoincrement())
+  currency_type CurrencyType
+  currency_code String       @unique @db.VarChar(10)
+  currency_name String       @db.VarChar(50)
+
+  wallets User_Wallet[]
+}
+
+enum CurrencyType {
+  CRYPTO
+  FIAT
+}
+
+model Sell_List {
+  sell_id                 Int        @id @default(autoincrement())
+  seller_fiat_wallet_id   Int
+  seller_crypto_wallet_id Int
+  price                   Decimal    @db.Decimal(18, 2)
+  amount                  Decimal    @db.Decimal(18, 8)
+  status                  SellStatus @default(OPEN)
+  created_at              DateTime   @default(now())
+  updated_at              DateTime   @updatedAt
+
+  seller_fiat_wallet   User_Wallet @relation("seller_fiat_wallet", fields: [seller_fiat_wallet_id], references: [wallet_id], onDelete: Cascade)
+  seller_crypto_wallet User_Wallet @relation("seller_crypto_wallet", fields: [seller_crypto_wallet_id], references: [wallet_id], onDelete: Cascade)
+
+  buy_orders Buy_Order[]
+}
+
+enum SellStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
+model Buy_Order {
+  buy_id                 Int      @id @default(autoincrement())
+  buyer_fiat_wallet_id   Int
+  buyer_crypto_wallet_id Int
+  sell_id                Int
+  price                  Decimal  @db.Decimal(18, 2)
+  amount                 Decimal  @db.Decimal(18, 8)
+  bought_at              DateTime @default(now())
+
+  buyer_fiat_wallet   User_Wallet @relation("buyer_fiat_wallet", fields: [buyer_fiat_wallet_id], references: [wallet_id], onDelete: Cascade)
+  buyer_crypto_wallet User_Wallet @relation("buyer_crypto_wallet", fields: [buyer_crypto_wallet_id], references: [wallet_id], onDelete: Cascade)
+  sell_order          Sell_List   @relation(fields: [sell_id], references: [sell_id], onDelete: Cascade)
+}
+
+model Crypto_Transaction {
+  crypto_transaction_id Int                   @id @default(autoincrement())
+  sender_wallet_id      Int
+  receiver_wallet_id    Int?
+  amount                Decimal               @db.Decimal(18, 8)
+  transaction_type      CryptoTransactionType
+  external_address      String?               @db.VarChar(255)
+  status                TransactionStatus     @default(PENDING)
+  created_at            DateTime              @default(now())
+  updated_at            DateTime              @updatedAt
+
+  sender_wallet   User_Wallet  @relation("sender_crypto_wallet", fields: [sender_wallet_id], references: [wallet_id], onDelete: Cascade)
+  receiver_wallet User_Wallet? @relation("receiver_crypto_wallet", fields: [receiver_wallet_id], references: [wallet_id], onDelete: Cascade)
+}
+
+enum CryptoTransactionType {
+  INTERNAL
+  EXTERNAL
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Fiat_Transaction {
+  fiat_transaction_id Int                 @id @default(autoincrement())
+  wallet_id           Int
+  amount              Decimal             @db.Decimal(18, 2)
+  transaction_type    FiatTransactionType
+  payment_method      PaymentMethod?
+  status              TransactionStatus   @default(PENDING)
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+
+  wallet User_Wallet @relation(fields: [wallet_id], references: [wallet_id], onDelete: Cascade)
+}
+
+enum FiatTransactionType {
+  DEPOSIT
+  WITHDRAW
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CREDIT_CARD
+}
