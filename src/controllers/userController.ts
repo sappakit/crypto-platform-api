@@ -23,10 +23,16 @@ export const getUserById = async (req: Request, res: Response) => {
 
   try {
     const user = await prisma.user.findUnique({
-      where: {
-        user_id: userId,
-      },
+      where: { user_id: userId },
     });
+
+    if (!user) {
+      res.status(404).json({
+        error: "User not found",
+      });
+
+      return;
+    }
 
     res.status(200).json({
       data: user,
@@ -56,12 +62,26 @@ export const createUser = async (req: Request, res: Response) => {
 // Update a user
 export const updateUser = async (req: Request, res: Response) => {
   const userId = Number(req.params.id);
-  const userData = req.body;
+  const { username, password, email, name } = req.body;
 
   try {
+    // User check
+    const user = await prisma.user.findUnique({
+      where: { user_id: userId },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        error: "User not found",
+      });
+
+      return;
+    }
+
+    // Update user data
     await prisma.user.update({
       where: { user_id: userId },
-      data: { ...userData },
+      data: { username, password, email, name },
     });
 
     res.status(200).json({
@@ -76,13 +96,25 @@ export const updateUser = async (req: Request, res: Response) => {
 
 // Delete a user
 export const deleteUser = async (req: Request, res: Response) => {
-  try {
-    const userId = Number(req.params.id);
+  const userId = Number(req.params.id);
 
+  try {
+    // User check
+    const user = await prisma.user.findUnique({
+      where: { user_id: userId },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        error: "User not found",
+      });
+
+      return;
+    }
+
+    // Delete user
     await prisma.user.delete({
-      where: {
-        user_id: userId,
-      },
+      where: { user_id: userId },
     });
 
     res.status(200).json({
