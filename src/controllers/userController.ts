@@ -13,7 +13,9 @@ export const getUsers = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: "Failed to fetch users" });
+    res.status(500).json({
+      error: "Failed to fetch users",
+    });
   }
 };
 
@@ -39,7 +41,9 @@ export const getUserById = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: "Failed to fetch the user" });
+    res.status(500).json({
+      error: "Failed to fetch the user",
+    });
   }
 };
 
@@ -48,14 +52,18 @@ export const createUser = async (req: Request, res: Response) => {
   const { username, password, email, name } = req.body;
 
   try {
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: { username, password, email, name },
     });
 
-    res.status(200).json({ message: "Create user successfully", data: user });
+    res.status(200).json({
+      message: "Create user successfully",
+    });
   } catch (error) {
     console.error("Error creating user:", error);
-    res.status(500).json({ error: "Failed to create user" });
+    res.status(500).json({
+      error: "Failed to create user",
+    });
   }
 };
 
@@ -89,7 +97,7 @@ export const updateUser = async (req: Request, res: Response) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Failed to update user",
+      error: "Failed to update user",
     });
   }
 };
@@ -122,6 +130,8 @@ export const deleteUser = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: "Failed to delete the user" });
+    res.status(500).json({
+      error: "Failed to delete the user",
+    });
   }
 };
