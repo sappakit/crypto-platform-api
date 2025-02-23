@@ -122,19 +122,19 @@ export const createFiatTransaction = async (req: Request, res: Response) => {
       return;
     }
 
-    // Check if currency type is FIAT
-    if (wallet.currency.currency_type !== "FIAT") {
-      res.status(400).json({
-        error: "Only fiat currency is allowed for fiat transaction",
-      });
-
-      return;
-    }
-
     const transactionAmount = new Decimal(amount);
 
     // If WITHDRAW transaction, deduct user fiat wallet balance
     if (transaction_type === "WITHDRAW") {
+      // Check if currency type is FIAT
+      if (wallet.currency.currency_type !== "FIAT") {
+        res.status(400).json({
+          error: "Only wallets holding fiat currency are allowed",
+        });
+
+        return;
+      }
+
       // Check if user has enough balance
       if (wallet.balance.lessThan(transactionAmount)) {
         res.status(400).json({ error: "Insufficient balance" });
@@ -159,6 +159,15 @@ export const createFiatTransaction = async (req: Request, res: Response) => {
       });
     } else if (transaction_type === "DEPOSIT") {
       // If DEPOSIT transaction, add user fiat wallet balance
+
+      // Check if currency type is FIAT
+      if (wallet.currency.currency_type !== "CRYPTO") {
+        res.status(400).json({
+          error: "Only wallets holding cryptocurrency are allowed",
+        });
+
+        return;
+      }
 
       await prisma.user_Wallet.update({
         where: { wallet_id },

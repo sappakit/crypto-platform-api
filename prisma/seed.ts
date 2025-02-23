@@ -34,6 +34,14 @@ async function main() {
     },
   });
 
+  await prisma.currency.create({
+    data: {
+      currency_type: "FIAT",
+      currency_code: "THB",
+      currency_name: "Thai Baht",
+    },
+  });
+
   const btc = await prisma.currency.create({
     data: {
       currency_type: "CRYPTO",
@@ -42,12 +50,20 @@ async function main() {
     },
   });
 
+  await prisma.currency.create({
+    data: {
+      currency_type: "CRYPTO",
+      currency_code: "ETH",
+      currency_name: "Ethereum",
+    },
+  });
+
   // Seed Wallets for Users
   const user1FiatWallet = await prisma.user_Wallet.create({
     data: {
       user_id: user1.user_id,
       currency_id: usd.currency_id,
-      balance: new Decimal(1000),
+      balance: new Decimal(35000),
     },
   });
 
@@ -55,7 +71,7 @@ async function main() {
     data: {
       user_id: user1.user_id,
       currency_id: btc.currency_id,
-      balance: new Decimal(2),
+      balance: new Decimal(100),
     },
   });
 
@@ -63,7 +79,7 @@ async function main() {
     data: {
       user_id: user2.user_id,
       currency_id: usd.currency_id,
-      balance: new Decimal(500),
+      balance: new Decimal(750000),
     },
   });
 
@@ -71,7 +87,7 @@ async function main() {
     data: {
       user_id: user2.user_id,
       currency_id: btc.currency_id,
-      balance: new Decimal(1),
+      balance: new Decimal(150),
     },
   });
 
@@ -81,7 +97,7 @@ async function main() {
       seller_fiat_wallet_id: user1FiatWallet.wallet_id,
       seller_crypto_wallet_id: user1CryptoWallet.wallet_id,
       price: new Decimal(30000),
-      amount: new Decimal(1),
+      amount: new Decimal(150),
       status: "OPEN",
     },
   });
