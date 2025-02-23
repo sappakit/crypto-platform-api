@@ -55,6 +55,7 @@ export const getCryptoTransaction = async (req: Request, res: Response) => {
   }
 };
 
+// Get crypto transaction By Id
 export const getCryptoTransactionById = async (req: Request, res: Response) => {
   const transactionId = Number(req.params.id);
 
@@ -138,7 +139,7 @@ export const createCryptoTransaction = async (req: Request, res: Response) => {
     const transactionAmount = new Decimal(amount);
 
     if (senderWallet.balance.lessThan(transactionAmount)) {
-      res.status(400).json({ error: "Insufficient balance." });
+      res.status(400).json({ error: "Insufficient balance" });
 
       return;
     }

@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { CryptoTransactionType } from "@prisma/client";
+import {
+  CryptoTransactionType,
+  FiatTransactionType,
+  PaymentMethod,
+} from "@prisma/client";
 
 export const validateCryptoTransactionData = (
   req: Request,
@@ -51,6 +55,40 @@ export const validateCryptoTransactionData = (
     if (receiver_wallet_id) {
       res.status(400).json({
         error: "Receiver wallet must be NULL for EXTERNAL transactions",
+      });
+
+      return;
+    }
+  }
+
+  next();
+};
+
+export const validateFiatTransactionData = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { transaction_type, payment_method } = req.body;
+
+  // Validate transaction type
+  const validTransactionTypes = Object.values(FiatTransactionType) as string[];
+
+  if (!validTransactionTypes.includes(transaction_type)) {
+    res.status(400).json({
+      error: "transaction_type must be DEPOSIT or WITHDRAW",
+    });
+
+    return;
+  }
+
+  // If DEPOSIT transaction, check payment method
+  if (transaction_type === "DEPOSIT") {
+    const validPaymentTypes = Object.values(PaymentMethod) as string[];
+
+    if (!validPaymentTypes.includes(payment_method)) {
+      res.status(400).json({
+        error: "transaction_type must be BANK_TRANSFER or CREDIT_CARD",
       });
 
       return;
