@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import userRouter from "./routes/userRoutes";
 import currencyRouter from "./routes/currencyRoutes";
+import marketRouter from "./routes/marketRoutes";
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 // All routes
 app.use("/users", userRouter); // User routes
 app.use("/currencies", currencyRouter); // Currency routes
+app.use("/market", marketRouter); // Market routes
 
 app.get("/test", (req, res) => {
   res.json("API Test");

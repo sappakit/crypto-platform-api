@@ -60,7 +60,7 @@ export const addCurrency = async (req: Request, res: Response) => {
       message: "Add currency successfully",
     });
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.log(error);
     res.status(500).json({
       error: "Failed to add currency",
     });

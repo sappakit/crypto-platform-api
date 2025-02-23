@@ -5,6 +5,8 @@ const prisma = new PrismaClient();
 
 // Get all user wallets
 export const getWallets = async (req: Request, res: Response) => {
+  const userId = Number(req.params.id);
+
   try {
     const rawWalletsData = await prisma.user_Wallet.findMany({
       select: {
@@ -17,11 +19,13 @@ export const getWallets = async (req: Request, res: Response) => {
           select: { currency_code: true, currency_name: true },
         },
       },
+      where: { user_id: userId },
     });
 
     // Remove nested object
-    const wallets = rawWalletsData.map(({ currency, ...rest }) => ({
+    const wallets = rawWalletsData.map(({ currency, balance, ...rest }) => ({
       ...rest,
+      balance: balance.toNumber(),
       currency_code: currency.currency_code,
       currency_name: currency.currency_name,
     }));
@@ -126,7 +130,7 @@ export const createWallet = async (req: Request, res: Response) => {
       message: "Create wallet successfully",
     });
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.log(error);
     res.status(500).json({
       error: "Failed to create wallet",
     });
@@ -172,7 +176,7 @@ export const updateWallet = async (req: Request, res: Response) => {
       message: "Update wallet balance successfully",
     });
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.log(error);
     res.status(500).json({
       error: "Failed to update wallet balance",
     });
