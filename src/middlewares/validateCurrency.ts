@@ -32,7 +32,9 @@ export const validateCurrencyData = (
   }
 
   // currency_type value check
-  if (!Object.values(CurrencyType).includes(currency_type as CurrencyType)) {
+  const validCurrencyTypes = Object.values(CurrencyType) as string[];
+
+  if (!validCurrencyTypes.includes(currency_type)) {
     res.status(400).json({
       error: "currency_type must be CRYPTO or FIAT",
     });
